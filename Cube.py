@@ -1,6 +1,6 @@
 
-DEFAULT_BG = ''
-SELECTED_BG = ''
+DEFAULT_BG = 'Resources\\letter_bg2.png'
+SELECTED_BG = 'Resources\\selected_bg2.png'
 
 class Cube:
 
