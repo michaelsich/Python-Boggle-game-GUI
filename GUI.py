@@ -15,10 +15,17 @@ TXT_BOX_FONT= ("david", 13)
 # images
 LOGO        = "Resources\\logo.png"
 
-
 # styles
 BTN_WIDTH   = 30
 BTN_HEIGHT  = 1
+
+# GENERAL verifies and TODO s
+# TODO: word cant be scored twice (even with diffrent path)
+# TODO: try to split board manager
+# TODO: default time is set to 3:00 mins
+# TODO: score is reseting in each game ( not mendatory )
+# TODO: can start another game at the end ( message )
+
 
 class Graphics:
     """GUI of game buggle"""
@@ -33,12 +40,13 @@ class Graphics:
             "canvas"    : "",
             "textbox"   : "",
             "time"      : "",
-            "score"     : ""
+            "score"     : "",
+            "pics"      : []
         }
 
         # create frames
-        self.create_main_frame()
         self.create_game_frame()
+        self.create_main_frame()
 
         self.__root.mainloop()
 
@@ -61,20 +69,20 @@ class Graphics:
 
         # labels
         main_menu_instruction = Label(main_frame,
-                                  text="Welcome! press on start to get youre daily dose of boggle",
+                                  text="Welcome!\nPress 'start!' to get your daily dose of boggle",
                                   font=H1_FONT)
         # buttons
         start_button = Button(main_frame, text="Start!",
-                          height=BTN_HEIGHT, width=BTN_WIDTH,
-                          bg="green", fg="white", relief="solid",
-                          font=BUTTON_FONT,
-                          command=self.on_start_click_event)
+                              height=BTN_HEIGHT, width=BTN_WIDTH,
+                              bg="green", fg="white", relief="solid",
+                              font=BUTTON_FONT,
+                              command=self.__on_start_click_event)
 
         quit_button = Button(main_frame, text="Quit!",
-                         height=BTN_HEIGHT, width=BTN_WIDTH,
-                         bg="dark red", fg="white", relief="solid",
-                         font=BUTTON_FONT,
-                         command=self.on_quit_click_event)
+                             height=BTN_HEIGHT, width=BTN_WIDTH,
+                             bg="dark red", fg="white", relief="solid",
+                             font=BUTTON_FONT,
+                             command=self.__on_quit_click_event)
 
         # pack all objects
         main_frame.grid(row=0, column=0, rowspan=3 ,sticky='news', ipadx=100)
@@ -122,7 +130,7 @@ class Graphics:
         quit_button = Button(right_frame, text="Quit",
                              bg="dark red", fg="white", relief="solid",
                              font=BUTTON_FONT,
-                             command=self.on_quit_click_event)
+                             command=self.__on_quit_click_event)
 
         # packing objects
         game_frame.grid(row=0, column=0, rowspan=3, sticky='news')
@@ -154,39 +162,46 @@ class Graphics:
                 pos_y = col*110+60
 
                 # create cube
-                image = canvas.create_image(pos_y, pos_x, image=img, command=self.on_start_click_event())
-                canvas.background = img
-                canvas.create_text(pos_y, pos_x, fill="darkblue", font=CUBE_FONT,
+                image = canvas.create_image(pos_y, pos_x, image=img)
+                canvas.image = img  # reference to img(tk garbage collector)
+                canvas.create_text(pos_y, pos_x, fill="dark blue", font=CUBE_FONT,
                                    text=curr_letters[col].get_letter())
                 self.__game_cubes.append(image)
 
-                # create event handling
-                # TODO: configure how to change background
+                # bind to event handler
                 canvas.tag_bind(image, '<ButtonPress-1>',
-                                lambda event, arg=image: self.on_cube_click_event(event, arg))
+                                lambda event, arg=image: self.__on_cube_click_event(event, arg))
 
         self.__elements["canvas"] = canvas
         canvas.pack()
 
     # region EVENTS
-    def on_start_click_event(self):
-        """Event handler for start button click"""
+    def __on_start_click_event(self):
+        """Event handler for start button click - raises game frame"""
         self.frames["game"].tkraise()
 
-    def on_quit_click_event(self):
-        """Event handler for quit button click"""
+    def __on_quit_click_event(self):
+        """Event handler for quit button click - closes window"""
         # TODO: add message box first
         self.__root.destroy()
 
-    def on_cube_click_event(self, event, index):
-        self.add_word_to_box("abc\n")
-        print(index)
+    def __on_cube_click_event(self, event, index):
+        """Changes status and bg pic of clicked item"""
+        index_row = index // 8
+        index_col = ((index - 8*index_row) - 1) // 2
+
+        # already selected
+        if not self.__select_cube(index_row, index_col):
+            self.__unselect_cube(index_row, index_col)
+        # change canvas item to selected
+        self.__change_bg(index_row, index_col, index)
+        # TODO: send letter to Game for word handling
 
     # endregion EVENTS
 
     # region SETTERS
     def add_word_to_box(self, word):
-        """ Gets a word and adds it to the text box """
+        """ Gets a word and adds it to the game's text box """
         self.__elements["textbox"].config(state=NORMAL)
         self.__elements["textbox"].insert(0.0, word)
         self.__elements["textbox"].config(state=DISABLED)
@@ -201,6 +216,23 @@ class Graphics:
 
     # endregion SETTERS
 
+    def __select_cube(self, row, col):
+        """changes cube's bg to selected, returns True upon success, False otherwise"""
+        if self.__letters[row][col].is_selected():
+            return False
+        self.__letters[row][col].set_background(True)
+        return True
+
+    def __unselect_cube(self, row, col):
+        """changes cube's bg to normal"""
+        self.__letters[row][col].set_background(False)
+
+    def __change_bg(self, row, col, index):
+        """ changes the canvas' item at (index) to cube's background """
+        bg_img = self.__letters[row][col].get_background()
+        img = PhotoImage(file=bg_img)
+        self.__elements["canvas"].itemconfig(index, image=img)
+        self.__elements["pics"].append(img)
 
 
 if __name__ == "__main__":
@@ -209,7 +241,7 @@ if __name__ == "__main__":
         cubbe = Cube.Cube(let)
         lst[0].append(cubbe)
 
-    for let in ['e','f','Qe','k']:
+    for let in ['e','f','Qu','k']:
         cubbe = Cube.Cube(let)
         lst[1].append(cubbe)
 
