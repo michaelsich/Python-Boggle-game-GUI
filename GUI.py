@@ -2,8 +2,8 @@ from tkinter import *
 import Cube
 
 # window properties
-WIDTH       = 700      # window width in pixels
-HEIGHT      = 500      # window height in pixels
+WIDTH       = 685      # window width in pixels
+HEIGHT      = 490      # window height in pixels
 
 # font settings
 H1_FONT     = ("arial", 16, "bold")
@@ -18,6 +18,7 @@ LOGO        = "Resources\\logo.png"
 # styles
 BTN_WIDTH   = 30
 BTN_HEIGHT  = 1
+BG_COLOR = "#142752"
 
 # GENERAL verifies and TODO s
 # TODO: word cant be scored twice (even with diffrent path)
@@ -56,6 +57,7 @@ class Graphics:
         gui_main.geometry(f"{WIDTH}x{HEIGHT}")
         gui_main.resizable(width=False, height=False)
         gui_main.title("HUJI Boggle!")
+        gui_main.configure(background=BG_COLOR)
         return gui_main
 
     def create_main_frame(self):
@@ -85,7 +87,7 @@ class Graphics:
                              command=self.__on_quit_click_event)
 
         # pack all objects
-        main_frame.grid(row=0, column=0, rowspan=3 ,sticky='news', ipadx=100)
+        main_frame.grid(row=0, column=0, rowspan=50 ,sticky='news', ipadx=100)
         logo.pack()
         main_menu_instruction.pack()
         start_button.pack()
@@ -94,7 +96,7 @@ class Graphics:
     def create_game_frame(self):
         """Creates the frame of the game"""
         #TODO: delete debug frame
-        debug_style = {"highlightbackground":"green",
+        debug_style = {"highlightbackground":"red",
                     "highlightcolor":"green",
                     "highlightthickness":1,
                     "width":100,
@@ -110,7 +112,7 @@ class Graphics:
         self.__create_game_board(left_frame)
 
         # time
-        time_frame = Frame(right_frame, **debug_style)
+        time_frame = Frame(right_frame, **debug_style,)
         time_label = Label(time_frame, text="time here", font=MAIN_FONT)
         self.__elements["time"] = time_label
 
@@ -151,26 +153,31 @@ class Graphics:
         img = PhotoImage(file=bg_img)
 
         # create a canvas
-        canvas = Canvas(frame, height=450, width=450, bg="dark blue")
+        canvas = Canvas(frame, height=460, width=450, bg="dark blue")
         canvas.config(scrollregion=canvas.bbox(ALL))
 
         # fill cubes ( pic + letter )
         for row in range(len(self.__letters)):
             curr_letters = self.__letters[row]
             for col in range(len(curr_letters)):
-                pos_x = row*110+60
-                pos_y = col*110+60
+                pos_x = row*110+65
+                pos_y = col*110+62
 
                 # create cube
                 image = canvas.create_image(pos_y, pos_x, image=img)
                 canvas.image = img  # reference to img(tk garbage collector)
-                canvas.create_text(pos_y, pos_x, fill="dark blue", font=CUBE_FONT,
-                                   text=curr_letters[col].get_letter())
+                cube_letter = canvas.create_text(pos_y, pos_x,
+                                                 font=CUBE_FONT,
+                                                 text=curr_letters[col].get_letter())
                 self.__game_cubes.append(image)
 
                 # bind to event handler
                 canvas.tag_bind(image, '<ButtonPress-1>',
-                                lambda event, arg=image: self.__on_cube_click_event(event, arg))
+                                lambda event, arg=image:
+                                self.__on_cube_click_event(event, arg))
+                canvas.tag_bind(cube_letter, '<ButtonPress-1>',
+                                lambda event,
+                                arg=image: self.__on_cube_click_event(event, arg))
 
         self.__elements["canvas"] = canvas
         canvas.pack()
