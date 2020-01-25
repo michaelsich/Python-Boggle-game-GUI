@@ -3,12 +3,12 @@ import Cube
 
 # window properties
 WIDTH       = 685      # window width in pixels
-HEIGHT      = 490      # window height in pixels
+HEIGHT      = 500      # window height in pixels
 
 # font settings
 H1_FONT     = ("arial", 16, "bold")
-BUTTON_FONT = ("arial", 14)
-MAIN_FONT   = ("arial", 12, "bold")
+BUTTON_FONT = ("comic sans ms", 14, "bold")
+MAIN_FONT   = ("comic sans ms", 12, "bold")
 CUBE_FONT   = ("david", 36, "bold")
 TXT_BOX_FONT= ("david", 13)
 
@@ -70,27 +70,32 @@ class Graphics:
         logo.image = logo_img
 
         # labels
-        main_menu_instruction = Label(main_frame,
+        main_menu_instruction = Label(main_frame, pady=25,
                                   text="Welcome!\nPress 'start!' to get your daily dose of boggle",
                                   font=H1_FONT)
         # buttons
-        start_button = Button(main_frame, text="Start!",
+        start_button = Button(main_frame, text="Start!", pady=15,
                               height=BTN_HEIGHT, width=BTN_WIDTH,
                               bg="green", fg="white", relief="solid",
                               font=BUTTON_FONT,
                               command=self.__on_start_click_event)
-
-        quit_button = Button(main_frame, text="Quit!",
+        start_button.flash()
+        quit_button = Button(main_frame, text="Quit!", pady=15,
                              height=BTN_HEIGHT, width=BTN_WIDTH,
                              bg="dark red", fg="white", relief="solid",
                              font=BUTTON_FONT,
                              command=self.__on_quit_click_event)
 
+        space1 = Label(main_frame, text="")
+        space2 = Label(main_frame, text="")
+
         # pack all objects
         main_frame.grid(row=0, column=0, rowspan=50 ,sticky='news', ipadx=100)
+        space1.pack()
         logo.pack()
         main_menu_instruction.pack()
         start_button.pack()
+        space2.pack()
         quit_button.pack()
 
     def create_game_frame(self):
@@ -153,14 +158,14 @@ class Graphics:
         img = PhotoImage(file=bg_img)
 
         # create a canvas
-        canvas = Canvas(frame, height=460, width=450, bg="dark blue")
+        canvas = Canvas(frame, height=475, width=450, bg="dark blue")
         canvas.config(scrollregion=canvas.bbox(ALL))
 
         # fill cubes ( pic + letter )
         for row in range(len(self.__letters)):
             curr_letters = self.__letters[row]
             for col in range(len(curr_letters)):
-                pos_x = row*110+65
+                pos_x = row*115+65
                 pos_y = col*110+62
 
                 # create cube
@@ -189,8 +194,12 @@ class Graphics:
 
     def __on_quit_click_event(self):
         """Event handler for quit button click - closes window"""
-        # TODO: add message box first
-        self.__root.destroy()
+        from tkinter import messagebox
+        msg_str = "If you quit now, your'e a loser!"
+        msg_box = messagebox.askokcancel("Oh.. Please don't!", msg_str,
+                                         icon='warning')
+        if msg_box:
+            self.__root.destroy()
 
     def __on_cube_click_event(self, event, index):
         """Changes status and bg pic of clicked item"""
@@ -219,10 +228,11 @@ class Graphics:
 
     def set_score(self, new_score):
         """ updates the game time """
-        self.__elements["score"].config(text=new_score)
+        self.__elements["score"].config(text="score:\t"+new_score)
 
     # endregion SETTERS
 
+    # region INNER METHODS
     def __select_cube(self, row, col):
         """changes cube's bg to selected, returns True upon success, False otherwise"""
         if self.__letters[row][col].is_selected():
@@ -240,7 +250,7 @@ class Graphics:
         img = PhotoImage(file=bg_img)
         self.__elements["canvas"].itemconfig(index, image=img)
         self.__elements["pics"].append(img)
-
+    # endregion INNER METHODS
 
 if __name__ == "__main__":
     lst = [[],[],[],[]]
